@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "poc_func_aci": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7161",
+      "launchBrowser": false
+    }
+  }
+}
