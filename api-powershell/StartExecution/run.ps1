@@ -5,9 +5,28 @@ param($QueueItem, $TriggerMetadata)
 Write-Host "PowerShell queue trigger function processed work item: $QueueItem"
 Write-Host "Queue item insertion time: $($TriggerMetadata.InsertionTime)"
 
+Write-Host "APP ID: $($env:AppId)"
+
+# $clientCredential = New-Object Microsoft.IdentityModel.Clients.ActiveDirectory.ClientCredential($env:AppId, $env:AppSecret)
+$azurePassword = ConvertTo-SecureString $env:AppSecret -AsPlainText -Force
+$PSCredential = New-Object System.Management.Automation.PSCredential($env:AppId, $azurePassword)
+
+Connect-AzAccount -Credential $PSCredential `
+                    -Tenant "43548595-c3b2-4c7c-b07b-b97911e6c10c" `
+                    -SubscriptionId "16195a49-804b-4707-bb52-686a311b9b98"   `
+                    -ServicePrincipal `
+                    -ErrorAction Stop 
+                    
 
 
-New-AzContainerGroup -ResourceGroupName "test-aci" -Name $QueueItem `
-    -Image alpine -OsType Linux `
-    -Command "/bin/sh -c `"for i in ``seq 1 30``; do sleep 1; echo `$i; done`"" `
-    -RestartPolicy Never
+# Set-AzContext -Subscription "16195a49-804b-4707-bb52-686a311b9b98"
+
+
+$container = New-AzContainerInstanceObject -Name "poc-func-api-instance-$QueueItem" -Image testacismdgithub.azurecr.io/testacismdgithub:latest
+$imageRegistryCredential = New-AzContainerGroupImageRegistryCredentialObject -Server "testacismdgithub.azurecr.io" -Username "$env:ACRUserName" -Password (ConvertTo-SecureString "$env:ACRPassword" -AsPlainText -Force) 
+$containerGroup = New-AzContainerGroup -ResourceGroupName test-aci -Name "testacismdgithub" -Location "West Europe" -Container $container -ImageRegistryCredential $imageRegistryCredential -RestartPolicy "OnFailure" 
+ 
+write-host "Created ContainerGroup: $containerGroup"
+
+
+Write-Host "########## FINISH ###########"

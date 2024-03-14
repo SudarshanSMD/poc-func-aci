@@ -16,10 +16,13 @@ $body = "This HTTP triggered function executed successfully. Pass a name in the 
 
 if ($name) {
     $body = "Hello, $name. This HTTP triggered function executed successfully."
+}else {
+    $name = "default"
+    $body = "Hello, $name. This HTTP triggered function executed successfully."
 }
 
 
-Push-OutputBinding -Name StartExecution -Value "temp-xyz-start-execution"
+Push-OutputBinding -Name StartExecution -Value "$name"
 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
