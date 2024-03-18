@@ -40,6 +40,16 @@ $containerGroup1 = New-AzContainerGroup -ResourceGroupName test-aci -Name "testa
 $container1 = New-AzContainerInstanceObject -Name "poc-instance-$QueueItem-2" -Image nginx -RequestCpu 1 -RequestMemoryInGb 1.5 -Port @($port1, $port2)  
 $containerGroup1 = New-AzContainerGroup -ResourceGroupName test-aci -Name "testacismdgithub" -Location "West Europe" -Container $container1 -OsType Linux -RestartPolicy "OnFailure"
 
+
+$containerB = New-AzContainerInstanceObject -Name "poc-instance-$QueueItem-B" -Image nginx -RequestCpu 1 -RequestMemoryInGb 1.5 -Port @($port1, $port2)  
+$containerGroupB = New-AzContainerGroup -ResourceGroupName test-aci -Name "poc-func-aci-cg-B" -Location "West Europe" -Container $container1 -OsType Linux -RestartPolicy "Never"
+
+$containerC = New-AzContainerInstanceObject -Name "poc-instance-$QueueItem-C" -Image nginx -RequestCpu 1 -RequestMemoryInGb 1.5 -Port @($port1, $port2)  
+$containerGroupC = New-AzContainerGroup -ResourceGroupName test-aci -Name "poc-func-aci-cg-C" -Location "West Europe" -Container $container1 -ImageRegistryCredential $imageRegistryCredential -RestartPolicy "Never" 
+
+
+ 
+
 # New-AzContainerGroup -ResourceGroupName test-aci -Name "container-$QueueItem" `
 # -Image alpine -OsType Linux `
 # -Command "echo 'Hello from an Azure container instance triggered by an Azure function'" `
