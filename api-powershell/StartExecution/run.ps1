@@ -20,32 +20,41 @@ Connect-AzAccount -Credential $PSCredential `
 
 
 # Set-AzContext -Subscription "16195a49-804b-4707-bb52-686a311b9b98"
-
-
-$container = New-AzContainerInstanceObject -Name "poc-func-api-instance-$QueueItem" -Image testacismdgithub.azurecr.io/testacismdgithub:latest
-$imageRegistryCredential = New-AzContainerGroupImageRegistryCredentialObject -Server "testacismdgithub.azurecr.io" -Username "$env:ACRUserName" -Password (ConvertTo-SecureString "$env:ACRPassword" -AsPlainText -Force) 
-$containerGroup = New-AzContainerGroup -ResourceGroupName test-aci -Name "testacismdgithub" -Location "West Europe" -Container $container -ImageRegistryCredential $imageRegistryCredential -RestartPolicy "OnFailure" 
- 
-
 Write-Host "####----######"
 Write-Host "Starting new Container Instance at:  $(Get-Date)"
-$port1 = New-AzContainerInstancePortObject -Port 8000 -Protocol TCP  
-$port2 = New-AzContainerInstancePortObject -Port 8001 -Protocol TCP  
-$container = New-AzContainerInstanceObject -Name "poc-instance-$QueueItem" -Image nginx -RequestCpu 1 -RequestMemoryInGb 1.5 -Port @($port1, $port2)  
-$containerGroup = New-AzContainerGroup -ResourceGroupName test-aci -Name "testacismdgithub" -Location "West Europe" -Container $container -OsType Linux -RestartPolicy "OnFailure"
 
-$container1 = New-AzContainerInstanceObject -Name "poc-instance-$QueueItem-1" -Image nginx -RequestCpu 1 -RequestMemoryInGb 1.5 -Port @($port1, $port2)  
-$containerGroup1 = New-AzContainerGroup -ResourceGroupName test-aci -Name "testacismdgithub" -Location "West Europe" -Container $container1 -OsType Linux -RestartPolicy "OnFailure"
-
-$container1 = New-AzContainerInstanceObject -Name "poc-instance-$QueueItem-2" -Image nginx -RequestCpu 1 -RequestMemoryInGb 1.5 -Port @($port1, $port2)  
-$containerGroup1 = New-AzContainerGroup -ResourceGroupName test-aci -Name "testacismdgithub" -Location "West Europe" -Container $container1 -OsType Linux -RestartPolicy "OnFailure"
+# $container = New-AzContainerInstanceObject -Name "poc-func-api-instance-$QueueItem" -Image testacismdgithub.azurecr.io/testacismdgithub:latest
+# $imageRegistryCredential = New-AzContainerGroupImageRegistryCredentialObject -Server "testacismdgithub.azurecr.io" -Username "$env:ACRUserName" -Password (ConvertTo-SecureString "$env:ACRPassword" -AsPlainText -Force) 
+# $containerGroup = New-AzContainerGroup -ResourceGroupName test-aci -Name "testacismdgithub" -Location "West Europe" -Container $container -ImageRegistryCredential $imageRegistryCredential -RestartPolicy "OnFailure" 
 
 
-$containerB = New-AzContainerInstanceObject -Name "poc-instance-$QueueItem-B" -Image nginx -RequestCpu 1 -RequestMemoryInGb 1.5 -Port @($port1, $port2)  
-$containerGroupB = New-AzContainerGroup -ResourceGroupName test-aci -Name "poc-func-aci-cg-B" -Location "West Europe" -Container $container1 -OsType Linux -RestartPolicy "Never"
+$startTime = New-AzContainerInstanceEnvironmentVariableObject -Name "startTime" -Value "$(Get-Date)"
+$env2 = New-AzContainerInstanceEnvironmentVariableObject -Name "env2" -SecureValue (ConvertTo-SecureString -String "value2" -AsPlainText -Force)
 
-$containerC = New-AzContainerInstanceObject -Name "poc-instance-$QueueItem-C" -Image nginx -RequestCpu 1 -RequestMemoryInGb 1.5 -Port @($port1, $port2)  
-$containerGroupC = New-AzContainerGroup -ResourceGroupName test-aci -Name "poc-func-aci-cg-C" -Location "West Europe" -Container $container1 -ImageRegistryCredential $imageRegistryCredential -RestartPolicy "Never" 
+$container = New-AzContainerInstanceObject -Name "poc-func-api-instance-$QueueItem" -Image testacismdgithub.azurecr.io/poc-func-aci:latest -EnvironmentVariable @($startTime, $env2)
+$imageRegistryCredential = New-AzContainerGroupImageRegistryCredentialObject -Server "testacismdgithub.azurecr.io" -Username "$env:ACRUserName" -Password (ConvertTo-SecureString "$env:ACRPassword" -AsPlainText -Force) 
+$containerGroup = New-AzContainerGroup -ResourceGroupName test-aci -Name "poc-func-aci-container" -Location "West Europe" -Container $container -ImageRegistryCredential $imageRegistryCredential -RestartPolicy "Never" -LogAnalyticWorkspaceId "$env:LAWId" -LogAnalyticWorkspaceKey "$env:LAWKey"
+ 
+
+
+
+# $port1 = New-AzContainerInstancePortObject -Port 8000 -Protocol TCP  
+# $port2 = New-AzContainerInstancePortObject -Port 8001 -Protocol TCP  
+# $container = New-AzContainerInstanceObject -Name "poc-instance-$QueueItem" -Image nginx -RequestCpu 1 -RequestMemoryInGb 1.5 -Port @($port1, $port2)  
+# $containerGroup = New-AzContainerGroup -ResourceGroupName test-aci -Name "testacismdgithub" -Location "West Europe" -Container $container -OsType Linux -RestartPolicy "OnFailure"
+
+# $container1 = New-AzContainerInstanceObject -Name "poc-instance-$QueueItem-1" -Image nginx -RequestCpu 1 -RequestMemoryInGb 1.5 -Port @($port1, $port2)  
+# $containerGroup1 = New-AzContainerGroup -ResourceGroupName test-aci -Name "testacismdgithub" -Location "West Europe" -Container $container1 -OsType Linux -RestartPolicy "OnFailure"
+
+# $container1 = New-AzContainerInstanceObject -Name "poc-instance-$QueueItem-2" -Image nginx -RequestCpu 1 -RequestMemoryInGb 1.5 -Port @($port1, $port2)  
+# $containerGroup1 = New-AzContainerGroup -ResourceGroupName test-aci -Name "testacismdgithub" -Location "West Europe" -Container $container1 -OsType Linux -RestartPolicy "OnFailure"
+
+
+# $containerB = New-AzContainerInstanceObject -Name "poc-instance-$QueueItem-B" -Image nginx -RequestCpu 1 -RequestMemoryInGb 1.5 -Port @($port1, $port2)  
+# $containerGroupB = New-AzContainerGroup -ResourceGroupName test-aci -Name "poc-func-aci-cg-B" -Location "West Europe" -Container $container1 -OsType Linux -RestartPolicy "Never"
+
+# $containerC = New-AzContainerInstanceObject -Name "poc-instance-$QueueItem-C" -Image nginx -RequestCpu 1 -RequestMemoryInGb 1.5 -Port @($port1, $port2)  
+# $containerGroupC = New-AzContainerGroup -ResourceGroupName test-aci -Name "poc-func-aci-cg-C" -Location "West Europe" -Container $container1 -ImageRegistryCredential $imageRegistryCredential -RestartPolicy "Never" 
 
 
  
