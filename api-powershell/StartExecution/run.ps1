@@ -29,13 +29,26 @@ Write-Host "Starting new Container Instance at:  $(Get-Date)"
 
 
 $startTime = New-AzContainerInstanceEnvironmentVariableObject -Name "startTime" -Value "$(Get-Date)"
+$scriptURI = New-AzContainerInstanceEnvironmentVariableObject -Name "scriptURI" -Value "$env:scriptURI"
+$scriptToken = New-AzContainerInstanceEnvironmentVariableObject -Name "scriptToken" -Value "$env:scriptToken"
+
+$port1 = New-AzContainerInstancePortObject -Port 8000 -Protocol TCP  
+$port2 = New-AzContainerInstancePortObject -Port 8001 -Protocol TCP  
 $env2 = New-AzContainerInstanceEnvironmentVariableObject -Name "env2" -SecureValue (ConvertTo-SecureString -String "value2" -AsPlainText -Force)
 
-$container = New-AzContainerInstanceObject -Name "poc-func-api-instance-$QueueItem" -Image testacismdgithub.azurecr.io/poc-func-aci:latest -EnvironmentVariable @($startTime, $env2)
-$imageRegistryCredential = New-AzContainerGroupImageRegistryCredentialObject -Server "testacismdgithub.azurecr.io" -Username "$env:ACRUserName" -Password (ConvertTo-SecureString "$env:ACRPassword" -AsPlainText -Force) 
-$containerGroup = New-AzContainerGroup -ResourceGroupName test-aci -Name "poc-func-aci-container" -Location "West Europe" -Container $container -ImageRegistryCredential $imageRegistryCredential -RestartPolicy "Never" -LogAnalyticWorkspaceId "$env:LAWId" -LogAnalyticWorkspaceKey "$env:LAWKey"
+# $container = New-AzContainerInstanceObject -Name "poc-func-api-instance-$QueueItem" -Image testacismdgithub.azurecr.io/poc-func-aci:latest -EnvironmentVariable @($startTime, $scriptURI, $scriptToken) -Port $port1
+# # $container2 = New-AzContainerInstanceObject -Name "poc-func-api-instance-$QueueItem-2" -Image testacismdgithub.azurecr.io/poc-func-aci:latest -EnvironmentVariable @($startTime, $scriptURI, $scriptToken) -Port $port2
+# $imageRegistryCredential = New-AzContainerGroupImageRegistryCredentialObject -Server "testacismdgithub.azurecr.io" -Username "$env:ACRUserName" -Password (ConvertTo-SecureString "$env:ACRPassword" -AsPlainText -Force) 
+# # $containerGroup = New-AzContainerGroup -ResourceGroupName test-aci -Name "poc-func-aci-container" -Location "West Europe" -Container @($container, $container2) -ImageRegistryCredential $imageRegistryCredential -RestartPolicy "Never" -LogAnalyticWorkspaceId "$env:LAWId" -LogAnalyticWorkspaceKey "$env:LAWKey"
+# $containerGroup = New-AzContainerGroup -ResourceGroupName test-aci -Name "poc-func-aci-container" -Location "West Europe" -Container @($container) -ImageRegistryCredential $imageRegistryCredential -RestartPolicy "Never" -LogAnalyticWorkspaceId "$env:LAWId" -LogAnalyticWorkspaceKey "$env:LAWKey"
  
 
+Start-AzContainerGroup -Name "poc-func-aci-container" -ResourceGroupName test-aci
+Invoke-AzContainerInstanceCommand `
+      -ContainerGroupName "poc-func-aci-container" `
+      -ContainerName "poc-func-api-instance-$QueueItem" `
+      -ResourceGroupName test-aci `
+      -Command "CMD ['pwsh', '-File', 'test.ps1']"
 
 
 # $port1 = New-AzContainerInstancePortObject -Port 8000 -Protocol TCP  

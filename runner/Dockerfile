@@ -1,13 +1,12 @@
 FROM mcr.microsoft.com/powershell:latest
 
-
 COPY . /app
 
 WORKDIR /app
 
 
 #install curl
-RUN apt-get update && apt-get install -y curl
+#RUN apt-get update && apt-get install -y curl
 
 RUN useradd -m dangerousdave
 
@@ -22,4 +21,4 @@ RUN pwsh -Command "Write-Host 'Hello from Docker! This is an inline PowerShell s
 
 
 #Run Script
-CMD ["pwsh", "-File", "test.ps1"]
+# CMD ["pwsh", "-File", "test.ps1"]
