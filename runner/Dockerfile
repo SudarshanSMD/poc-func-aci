@@ -21,4 +21,4 @@ RUN pwsh -Command "Write-Host 'Hello from Docker! This is an inline PowerShell s
 
 
 #Run Script
-# CMD ["pwsh", "-File", "test.ps1"]
+CMD ["pwsh", "-File", "test.ps1"]
