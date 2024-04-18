@@ -20,6 +20,22 @@ catch {
     Write-Error "Exception while executing Script."
 }
 
+
+# Define the payload data (you can customize this)
+$payload = @{
+    "ContainerType" = $env:ContainerType
+    "ContainerNumber" = $env:ContainerCount
+    "ExecutionId" = $env:ExecutionId
+}
+# Convert the payload to JSON
+$jsonPayload = $payload | ConvertTo-Json
+
+# Send the payload to the webhook
+Invoke-RestMethod -Uri $env:WebhookURL -Method Post -Body $jsonPayload -ContentType "application/json"
+
+# Print a success message
+Write-Host "Payload sent successfully to $env:WebhookURL"
+
 # #<---- Send payload to webhook ---------
 # # Define the webhook URL
 # $webhookUrl = "https://eo1u4qkjzptlhqa.m.pipedream.net"

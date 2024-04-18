@@ -19,7 +19,7 @@ function TableContainerGet([String] $ContainerType) {
     return $rows
 }
 
-function TableContainerAdd([String] $ContainerType, [String] $ContainerCount, [String] $ExecutionId) {    
+function TableContainerAdd([String] $ContainerType, [String] $ContainerCount, [String] $ExecutionId) {
     $StorageAccountContext = (Get-AzStorageAccount -Name $env:StorageAccountName -ResourceGroupName $env:StorageAccountRG  -ErrorAction Stop).Context
     $cloudTable = (Get-AzStorageTable -Context $StorageAccountContext -Name "Container").CloudTable
 
@@ -80,7 +80,7 @@ write-host $containerList
 write-host "Conatiner list count: $($containerList.count )"
 write-host "ContainerCount: $env:ContainerCount )"
 
-$pickedContainerCount = $containerList.count 
+$pickedContainerCount = $containerList.count
 
 # case if new contaner is not yet added
 if (-not $containerList -or ($containerList.count -lt $env:ContainerCount)) {
@@ -116,10 +116,15 @@ Write-Host "Starting new Container Instance at:  $(Get-Date)"
 
 $resouceGroupName = "test-aci"
 
+
 $startTime = New-AzContainerInstanceEnvironmentVariableObject -Name "startTime" -Value "$(Get-Date)"
 $scriptURI = New-AzContainerInstanceEnvironmentVariableObject -Name "scriptURI" -Value "$env:scriptURI"
 $scriptToken = New-AzContainerInstanceEnvironmentVariableObject -Name "scriptToken" -Value "$env:scriptToken"
-$executionId = New-AzContainerInstanceEnvironmentVariableObject -Name "ExecutionId" -Value "$($QueueItem.ExecutionId)"
+$ExecutionIdObject = New-AzContainerInstanceEnvironmentVariableObject -Name "ExecutionId" -Value "$($QueueItem.ExecutionId)"
+$ContainerTypeObject = New-AzContainerInstanceEnvironmentVariableObject -Name "ContainerType" -Value "$($QueueItem.type)"
+$ContainerCountObject = New-AzContainerInstanceEnvironmentVariableObject -Name "ContainerCount" -Value "$pickedContainerCount"
+$WebhookURLObject = New-AzContainerInstanceEnvironmentVariableObject -Name "WebhookURL" -Value "$env:FinishExecutionURL"
+
 
 $port1 = New-AzContainerInstancePortObject -Port 8000 -Protocol TCP  
 $port2 = New-AzContainerInstancePortObject -Port 8001 -Protocol TCP  
@@ -128,11 +133,11 @@ $env2 = New-AzContainerInstanceEnvironmentVariableObject -Name "env2" -SecureVal
 $imageRegistryCredential = New-AzContainerGroupImageRegistryCredentialObject -Server "testacismdgithub.azurecr.io" -Username "$env:ACRUserName" -Password (ConvertTo-SecureString "$env:ACRPassword" -AsPlainText -Force) 
 
 if ($QueueItem.type -eq "default") {
-    $container = New-AzContainerInstanceObject -Name "poc-func-aci-instance-base" -Image testacismdgithub.azurecr.io/base:latest -EnvironmentVariable @($startTime, $scriptURI, $scriptToken) -Port $port1
+    $container = New-AzContainerInstanceObject -Name "poc-func-aci-instance-base" -Image testacismdgithub.azurecr.io/base:latest -EnvironmentVariable @($startTime, $scriptURI, $scriptToken, $ContainerTypeObject, $ExecutionIdObject, $ContainerCountObject, $WebhookURLObject) -Port $port1
     $containerGroup = New-AzContainerGroup -ResourceGroupName $resouceGroupName -Name "poc-func-aci-container-base-$pickedContainerCount" -Location "West Europe" -Container @($container) -ImageRegistryCredential $imageRegistryCredential -RestartPolicy "Never" -LogAnalyticWorkspaceId "$env:LAWId" -LogAnalyticWorkspaceKey "$env:LAWKey"
 }
 else {
-    $container = New-AzContainerInstanceObject -Name "poc-func-aci-instance-$($QueueItem.type)" -Image testacismdgithub.azurecr.io/$($QueueItem.type):latest -EnvironmentVariable @($startTime, $scriptURI, $scriptToken) -Port $port1
+    $container = New-AzContainerInstanceObject -Name "poc-func-aci-instance-$($QueueItem.type)" -Image testacismdgithub.azurecr.io/$($QueueItem.type):latest -EnvironmentVariable @($startTime, $scriptURI, $scriptToken, $ContainerTypeObject, $ExecutionIdObject, $ContainerCountObject, $WebhookURLObject) -Port $port1
     $containerGroup = New-AzContainerGroup -ResourceGroupName test-aci -Name "poc-func-aci-container-$($QueueItem.type)-$pickedContainerCount" -Location "West Europe" -Container @($container) -ImageRegistryCredential $imageRegistryCredential -RestartPolicy "Never" -LogAnalyticWorkspaceId "$env:LAWId" -LogAnalyticWorkspaceKey "$env:LAWKey"
 }
 
